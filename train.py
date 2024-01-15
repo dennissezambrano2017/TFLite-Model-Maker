@@ -47,9 +47,14 @@ df = pd.DataFrame(data)
 
 
 ### Train the object detection model ###
-spec =  model_spec.get('mobilenet_v2')
+spec = model_spec.get('mobilenet_v2')
+
 # Load Datasets
-train_data = object_detector.DataLoader.from_pascal_voc(images_dir=train_path,annotations_dir=label_train,label_map={1: "blind-beetle",2: "corn-lepidoptera",3: "cutworm",4: "mole-cricket",5: "wireworm"})
+train_data = object_detector.DataLoader.from_pascal_voc(
+    images_dir=train_path,
+    annotations_dir=label_train,
+    label_map={1: "blind-beetle",2: "corn-lepidoptera",3: "cutworm",4: "mole-cricket",5: "wireworm"}
+)
 epochs = 100
 batch_size = 17
 max_detections = 15
