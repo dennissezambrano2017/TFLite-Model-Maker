@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #Imports
 import pandas as pd
 import sys
