@@ -1,15 +1,12 @@
 import pandas as pd
-import sys
-from PIL import Image
-import os
-import xml.etree.ElementTree as ET
 import numpy as np
-import random
-import shutil
-from tflite_model_maker.config import ExportFormat, QuantizationConfig
+import os
+
+from tflite_model_maker.config import QuantizationConfig
+from tflite_model_maker.config import ExportFormat
 from tflite_model_maker import model_spec
 from tflite_model_maker import object_detector
-from tflite_support import metadata
+
 import tensorflow as tf
 assert tf.__version__.startswith('2')
 
