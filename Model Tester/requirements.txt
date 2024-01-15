@@ -1,0 +1,3 @@
+tensorflow==2.8.0
+numpy==1.23.5
+tflite-support==0.4.4
