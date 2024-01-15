@@ -41,118 +41,63 @@ if modelType == 'efficientdet-lite4':
 if modelType == 'mobilenet_v2':
   modelType_uri = 'https://www.kaggle.com/models/google/mobilenet-v2/frameworks/TensorFlow2/variations/035-128-classification/versions/2'
 
-#Delete non-image file
-#This file may exist in the exported data from kili-technology
-if os.path.isfile(PATH+'/images/remote_assets.csv'):
-    os.remove(PATH+'/images/remote_assets.csv')
+# Ruta al directorio que contiene las imágenes de entrenamiento
+train_path = '/content/drive/MyDrive/Pest/train/images'
+# Ruta al directorio que contiene las etiquetas de entrenamiento
+label_train = '/content/drive/MyDrive/Pest/train/labels'
 
-#resize the images
-for filename in os.listdir(PATH+"/images/"):
-  if filename.endswith("jpg"):
-      img_org = Image.open(PATH+"/images/"+filename)
-      newsize = (newX,newY)
-      img_org = img_org.resize(newsize)
-      img_org.save(PATH+"/training/images/"+filename)
+# Ruta al directorio que contiene las imágenes de validación
+val_path = '/content/drive/MyDrive/Pest/val/images'
+# Ruta al directorio que contiene las etiquetas de validación
+label_val = '/content/drive/MyDrive/Pest/val/labels'
 
-#keep track of all the lables used in the data
-labels = {}
-labelNumber = 0
+# Visualizando datos
+names = []
+nums = []
+data = {'Name of class':[],'Number of samples':[]}
 
-#adjust pascal voc files to match the resized images
-for filename in os.listdir(PATH+"/labels/"):
-  tree = ET.parse(PATH+"/labels/"+filename)
-  root = tree.getroot()
 
-  oldX = float(root.find('size').find('width').text)
-  oldY = float(root.find('size').find('height').text)
+# Iterar sobre las clases en el directorio de entrenamiento
+for class_name in os.listdir(train_path):
+    class_path = os.path.join(train_path, class_name)
 
-  scaleX = newX/oldX
-  scaleY = newY/oldY
+    # Verificar si es un directorio
+    if os.path.isdir(class_path):
+        # Contar el número de archivos en el directorio de la clase
+        num_samples = len(os.listdir(class_path))
+        names.append(class_name)
+        nums.append(num_samples)
 
-  root.find('size').find('width').text = str(newX)
-  root.find('size').find('height').text = str(newY)
-
-  root.find('filename').text = root.find('filename').text[:-3]+'jpg'
-
-  for member in root.findall('object'):
-    labelName = member.find('name').text
-    found = False
-    for key in labels:
-      value = labels.get(key)
-      if(value == labelName):
-        found = True
-        break
-    if(not found):
-      labelNumber += 1
-      labels.update({labelNumber:labelName})
-
-    bndbox = member.find('bndbox')
-
-    xmin = bndbox.find('xmin')
-    ymin = bndbox.find('ymin')
-    xmax = bndbox.find('xmax')
-    ymax = bndbox.find('ymax')
-
-    xmin.text = str(int(np.round(float(xmin.text) * scaleX)))
-    ymin.text = str(int(np.round(float(ymin.text) * scaleY)))
-    xmax.text = str(int(np.round(float(xmax.text) * scaleX)))
-    ymax.text = str(int(np.round(float(ymax.text) * scaleY)))
-
-  tree.write(PATH+"/training/Annotations/"+filename)
-
-#Split the data randomly into the training data, validation data, and testing data
-image_paths = os.listdir(PATH+'/images/')
-random.shuffle(image_paths)
-
-for i, image_path in enumerate(image_paths):
-  if i < int(len(image_paths) * 0.2) and i > int(len(image_paths) * 0.1):
-    #move to validation
-    shutil.move(PATH+'/training/images/'+image_path, PATH+'/validation/images/')
-    shutil.move(PATH+'/training/Annotations/'+image_path.replace("jpg", "xml"), PATH+'/validation/Annotations')
-  elif i < int(len(image_paths) * 0.2):
-    #move to test
-    shutil.move(PATH+'/training/images/'+image_path, PATH+'/testing/images/')
-    shutil.move(PATH+'/training/Annotations/'+image_path.replace("jpg", "xml"), PATH+'/testing/Annotations')
-
+data['Name of class'] += names
+data['Number of samples'] += nums
+df = pd.DataFrame(data)
+df
 
 ### Train the object detection model ###
-
+spec =  model_spec.get('mobilenet_v2')
 # Load Datasets
-train_data = object_detector.DataLoader.from_pascal_voc(images_dir=PATH+'/training/images',annotations_dir=PATH+'/training/Annotations',label_map=labels)
-validation_data = object_detector.DataLoader.from_pascal_voc(images_dir=PATH+'/validation/images',annotations_dir=PATH+'/validation/Annotations',label_map=labels)
-test_data = object_detector.DataLoader.from_pascal_voc(images_dir=PATH+'/testing/images',annotations_dir=PATH+'/testing/Annotations',label_map=labels)
-
-# Load model spec
-spec = object_detector.EfficientDetSpec(
-  model_name=modelType,
-  uri=modelType_uri,
-  hparams={'max_instances_per_image': 25})
+train_data = object_detector.DataLoader.from_pascal_voc(images_dir=train_path,annotations_dir=label_train,label_map={1: "blind-beetle",2: "corn-lepidoptera",3: "cutworm",4: "mole-cricket",5: "wireworm"})
+epochs = 100
+batch_size = 17
+max_detections = 15
 
 # Train the model
-model = object_detector.create(train_data, model_spec=spec, batch_size=8, train_whole_model=True, epochs=50, validation_data=validation_data)
+model = object_detector.create
+(train_data, 
+model_spec = spec, 
+batch_size = batch_size, 
+train_whole_model = False, 
+epochs = epochs, 
+validation_data=val_path
+)
 
 # Evaluate the model
-eval_result = model.evaluate(test_data)
-
-# Print COCO metrics
-print("COCO metrics before converting to TFLite:")
-for label, metric_value in eval_result.items():
-    print(f"{label}: {metric_value}")
-
-# Add a line break after all the items have been printed
-print()
+eval_result = model.evaluate(val_path)
 
 # Export the model
-model.export(export_dir=PATH, export_format=[ExportFormat.TFLITE, ExportFormat.LABEL])
+model.export(export_dir='.', export_format=[ExportFormat.TFLITE, ExportFormat.LABEL])
 
 # Evaluate the tflite model
-tflite_eval_result = model.evaluate_tflite(PATH+'/model.tflite', test_data)
-
-# Print COCO metrics for tflite
-print("COCO metrics for TFLite:")
-for label, metric_value in tflite_eval_result.items():
-    print(f"{label}: {metric_value}")
-
+model.evaluate_tflite('model.tflite', val_path)
 
 print('Training and exporting is complete')
-print('Your model is in your google drive at '+PATH+'/model.tflite')
