@@ -1,4 +1,3 @@
-#Imports
 import pandas as pd
 import sys
 from PIL import Image
