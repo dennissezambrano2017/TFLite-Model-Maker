@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 #Imports
+import pandas as pd
 import sys
 from PIL import Image
 import os
@@ -71,7 +72,7 @@ for class_name in os.listdir(train_path):
 data['Name of class'] += names
 data['Number of samples'] += nums
 df = pd.DataFrame(data)
-df
+
 
 ### Train the object detection model ###
 spec =  model_spec.get('mobilenet_v2')
@@ -82,13 +83,13 @@ batch_size = 17
 max_detections = 15
 
 # Train the model
-model = object_detector.create
-(train_data, 
-model_spec = spec, 
-batch_size = batch_size, 
-train_whole_model = False, 
-epochs = epochs, 
-validation_data=val_path
+model = object_detector.create(
+    train_data,
+    model_spec=spec,
+    batch_size=batch_size,
+    train_whole_model=False,
+    epochs=epochs,
+    validation_data=val_path
 )
 
 # Evaluate the model
@@ -99,5 +100,5 @@ model.export(export_dir='.', export_format=[ExportFormat.TFLITE, ExportFormat.LA
 
 # Evaluate the tflite model
 model.evaluate_tflite('model.tflite', val_path)
-
+df
 print('Training and exporting is complete')
