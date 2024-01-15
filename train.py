@@ -14,28 +14,6 @@ tf.get_logger().setLevel('ERROR')
 from absl import logging
 logging.set_verbosity(logging.ERROR)
 
-#Take in the arguments for this script
-#The user picked the project folder, image resize infox and modelType
-PATH = sys.argv[1]
-
-newX = int(sys.argv[2])
-newY = int(sys.argv[3])
-
-modelType = sys.argv[4]
-modelType_uri = ''
-if modelType == 'efficientdet-lite0':
-  modelType_uri = 'https://tfhub.dev/tensorflow/efficientdet/lite0/feature-vector/1'
-if modelType == 'efficientdet-lite1':
-  modelType_uri = 'https://tfhub.dev/tensorflow/efficientdet/lite1/feature-vector/1'
-if modelType == 'efficientdet-lite2':
-  modelType_uri = 'https://tfhub.dev/tensorflow/efficientdet/lite2/feature-vector/1'
-if modelType == 'efficientdet-lite3':
-  modelType_uri = 'https://tfhub.dev/tensorflow/efficientdet/lite3/feature-vector/1'
-if modelType == 'efficientdet-lite4':
-  modelType_uri = 'https://tfhub.dev/tensorflow/efficientdet/lite4/feature-vector/1'
-if modelType == 'mobilenet_v2':
-  modelType_uri = 'https://www.kaggle.com/models/google/mobilenet-v2/frameworks/TensorFlow2/variations/035-128-classification/versions/2'
-
 # Ruta al directorio que contiene las imágenes de entrenamiento
 train_path = '/content/drive/MyDrive/Pest/train/images'
 # Ruta al directorio que contiene las etiquetas de entrenamiento
