@@ -47,7 +47,7 @@ df = pd.DataFrame(data)
 
 
 ### Train the object detection model ###
-spec = model_spec.get('mobilenet_v2')
+spec = model_spec.get('mobilenetv2-035-128')
 
 # Load Datasets
 train_data = object_detector.DataLoader.from_pascal_voc(
