@@ -46,6 +46,33 @@ data['Name of class'] += names
 data['Number of samples'] += nums
 df = pd.DataFrame(data)
 df
-print(tflite_model_maker.model_spec.get( spec_or_str, *args, **kwargs ))
+### Train the object detection model ###
+spec =  model_spec.get('mobilenet_v2')
+# Load Datasets
+train_data = object_detector.DataLoader.from_pascal_voc(images_dir=train_path,annotations_dir=label_train,label_map={1: "blind-beetle",2: "corn-lepidoptera",3: "cutworm",4: "mole-cricket",5: "wireworm"})
+epochs = 100
+batch_size = 17
+max_detections = 15
+
+# Train the model
+model = object_detector.create(
+    train_data,
+    model_spec=spec,
+    batch_size=batch_size,
+    train_whole_model=False,
+    epochs=epochs,
+    validation_data=val_path
+)
+
+# Evaluate the model
+eval_result = model.evaluate(val_path)
+
+# Export the model
+model.export(export_dir='.', export_format=[ExportFormat.TFLITE, ExportFormat.LABEL])
+
+# Evaluate the tflite model
+model.evaluate_tflite('model.tflite', val_path)
+df
+print('Training and exporting is complete')
 
 print('Training and exporting is complete')
