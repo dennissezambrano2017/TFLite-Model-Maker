@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import os
+import tflite_model_maker
 
 from tflite_model_maker.config import QuantizationConfig
 from tflite_model_maker.config import ExportFormat
