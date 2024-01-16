@@ -45,6 +45,6 @@ data['Name of class'] += names
 data['Number of samples'] += nums
 df = pd.DataFrame(data)
 df
-print(model_spec.MODEL_SPECS.keys())
+print(tflite_model_maker.model_spec.get( spec_or_str, *args, **kwargs ))
 
 print('Training and exporting is complete')
