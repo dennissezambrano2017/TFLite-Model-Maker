@@ -7,6 +7,7 @@ from tflite_model_maker.config import QuantizationConfig
 from tflite_model_maker.config import ExportFormat
 from tflite_model_maker import model_spec
 from tflite_model_maker import object_detector
+from tflite_model_maker.object_detector import ssd_mobilenet_v2
 
 import tensorflow as tf
 assert tf.__version__.startswith('2')
@@ -47,32 +48,39 @@ data['Number of samples'] += nums
 df = pd.DataFrame(data)
 df
 ### Train the object detection model ###
-spec =  model_spec.get('mobilenet_v2')
+modelType = 'ssd_mobilenet_v2'
+modelType_uri = 'https://www.kaggle.com/models/tensorflow/ssd-mobilenet-v2/frameworks/TensorFlow2/variations/ssd-mobilenet-v2/versions/1'
+spec = ssd_mobilenet_v2.SsdMobileNetV2Spec(
+    uri=modelType_uri,
+    hparams={'max_instances_per_image': 25}
+)
+
+
 # Load Datasets
 train_data = object_detector.DataLoader.from_pascal_voc(images_dir=train_path,annotations_dir=label_train,label_map={1: "blind-beetle",2: "corn-lepidoptera",3: "cutworm",4: "mole-cricket",5: "wireworm"})
+val_data = object_detector.DataLoader.from_pascal_voc(images_dir=val_path, annotations_dir=label_val, label_map={1: "blind-beetle", 2: "corn-lepidoptera", 3: "cutworm", 4: "mole-cricket", 5: "wireworm"})
+
 epochs = 100
 batch_size = 17
 max_detections = 15
 
-# Train the model
+# Entrenar el modelo
 model = object_detector.create(
     train_data,
     model_spec=spec,
     batch_size=batch_size,
     train_whole_model=False,
     epochs=epochs,
-    validation_data=val_path
+    validation_data=val_data
 )
 
-# Evaluate the model
-eval_result = model.evaluate(val_path)
+# Evaluar el modelo
+eval_result = model.evaluate(val_data)
 
-# Export the model
+# Exportar el modelo
 model.export(export_dir='.', export_format=[ExportFormat.TFLITE, ExportFormat.LABEL])
 
-# Evaluate the tflite model
-model.evaluate_tflite('model.tflite', val_path)
-df
-print('Training and exporting is complete')
+# Evaluar el modelo TFLite
+model.evaluate_tflite('model.tflite', val_data)
 
 print('Training and exporting is complete')
