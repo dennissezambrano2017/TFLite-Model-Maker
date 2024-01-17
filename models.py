@@ -1,9 +1,7 @@
-import os
-import pathlib
+import tensorflow_hub as hub
 
-# Clone the tensorflow models repository if it doesn't already exist
-if "models" in pathlib.Path.cwd().parts:
-  while "models" in pathlib.Path.cwd().parts:
-    os.chdir('..')
-elif not pathlib.Path('models').exists():
-  !git clone --depth 1 https://github.com/tensorflow/models
+# URL del modelo de MobileNet para detección de objetos
+model_url = "https://tfhub.dev/google/openimages_v4/ssd/mobilenet_v2/1"
+
+# Cargar el modelo
+model = hub.load(model_url)
